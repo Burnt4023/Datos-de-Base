@@ -20,24 +20,24 @@ void listarTablas(sqlite3 * db) {
   sqlite3_finalize(stmt);
 }
 
-void crearTabla(sqlite3 * db) {
+void crearTabla(sqlite3 *db) {
   std::string tableName;
   std::cout << "Ingrese el nombre de la nueva tabla: ";
   std::cin >> tableName;
 
   // Verificar si la tabla ya existe en la base de datos
-  const char * showTableSQL = "SELECT name FROM sqlite_master WHERE type='table';";
-  sqlite3_stmt * stmt;
+  const char *checkTableSQL = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?;";
+  sqlite3_stmt *stmt;
 
-if (sqlite3_prepare_v2(db, showTableSQL, -1, &stmt, 0) == SQLITE_OK) {
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-      const unsigned char * existingTableName = sqlite3_column_text(stmt, 0);
-      if (std::string(reinterpret_cast<const char*>(existingTableName)) == tableName) {
-        std::cout << "La tabla ya existe en la base de datos." << std::endl;
-        return;
-      }
+  if (sqlite3_prepare_v2(db, checkTableSQL, -1, &stmt, 0) == SQLITE_OK) {
+    sqlite3_bind_text(stmt, 1, tableName.c_str(), -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+      std::cout << "La tabla ya existe en la base de datos." << std::endl;
+      sqlite3_finalize(stmt);
+      return;
     }
-}
+  }
 
   sqlite3_finalize(stmt);
 
@@ -50,6 +50,109 @@ if (sqlite3_prepare_v2(db, showTableSQL, -1, &stmt, 0) == SQLITE_OK) {
   }
 }
 
+
+void borrarTabla(sqlite3 * db) {
+  std::string tableName;
+  std::cout << "Ingrese el nombre de la tabla que desea borrar: ";
+  std::cin >> tableName;
+
+  // Verificar si la tabla existe en la base de datos
+  const char * showTableSQL = "SELECT name FROM sqlite_master WHERE type='table';";
+  sqlite3_stmt * stmt;
+
+  if (sqlite3_prepare_v2(db, showTableSQL, -1, &stmt, 0) == SQLITE_OK) {
+    bool tableExists = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+      const unsigned char * existingTableName = sqlite3_column_text(stmt, 0);
+      if (std::string(reinterpret_cast<const char*>(existingTableName)) == tableName) {
+        tableExists = true;
+        break;
+      }
+    }
+
+    if (!tableExists) {
+      std::cout << "La tabla no existe en la base de datos." << std::endl;
+      return;
+    }
+  }
+
+  sqlite3_finalize(stmt);
+
+  // Crear la sentencia SQL para borrar la tabla
+  std::string dropTableSQL = "DROP TABLE IF EXISTS " + tableName + ";";
+  if (sqlite3_exec(db, dropTableSQL.c_str(), 0, 0, 0) == SQLITE_OK) {
+    std::cout << "Tabla borrada con éxito." << std::endl;
+  } else {
+    std::cerr << "Error al borrar la tabla: " << sqlite3_errmsg(db) << std::endl;
+  }
+}
+
+void seleccionarTabla(sqlite3 * db) {
+  listarTablas(db);
+  std::string tableName;
+  std::cout << "Ingrese el nombre de la tabla: ";
+  std::cin >> tableName;
+
+  // Verificar si la tabla existe en la base de datos
+  const char * showTableSQL = "SELECT name FROM sqlite_master WHERE type='table';";
+  sqlite3_stmt * stmt;
+
+  if (sqlite3_prepare_v2(db, showTableSQL, -1, &stmt, 0) == SQLITE_OK) {
+    bool tableExists = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+      const unsigned char * existingTableName = sqlite3_column_text(stmt, 0);
+      if (std::string(reinterpret_cast<const char*>(existingTableName)) == tableName) {
+        tableExists = true;
+        break;
+      }
+    }
+
+    if (!tableExists) {
+      std::cout << "La tabla no existe en la base de datos." << std::endl;
+      return;
+    }
+  }
+
+  sqlite3_finalize(stmt);
+
+  int opcionTabla;
+  while (true) {
+    system("cls");
+    std::cout << "\t\t    (|   \\                        |        /|/  \\              " << std::endl;
+    std::cout << "\t\t     |    | __, _|_  __   ,     __|   _     | __/ __,   ,   _  " << std::endl;
+    std::cout << "\t\t    _|    |/  |  |  /  \\_/ \\_  /  |  |/     |   \\/  |  / \\_|/  " << std::endl;
+    std::cout << "\t\t   (/\\___/ \\_/|_/|_/\\__/  \\/   \\_/|_/|__/   |(__/\\_/|_/ \\/ |__/  " << std::endl;
+    std::cout << "\t\t                                                                  " << std::endl;
+    std::cout << "\t\tTabla seleccionada: " << tableName << "\n";
+    std::cout << "\t\t1. Mostrar Lista\n";
+    std::cout << "\t\t2. Editar Lista\n";
+    std::cout << "\t\t3. Atrás\n";
+    std::cout << "\t\tSeleccione una opcion: ";
+    std::cin >> opcionTabla;
+
+    switch (opcionTabla) {
+    case 1:
+      // Llama a la función de mostrar lista para la tabla seleccionada
+      // Ejemplo: mostrarListaParaTabla(db, tableName);
+      std::cout << "Mostrar Lista para la tabla " << tableName << std::endl;
+      break;
+    case 2:
+      // Llama a la función de editar lista para la tabla seleccionada
+      // Ejemplo: editarListaParaTabla(db, tableName);
+      std::cout << "Editar Lista para la tabla " << tableName << std::endl;
+      break;
+    case 3:
+      return; // Regresar al menú principal
+    default:
+      std::cout << "Opción no válida. Intente nuevamente." << std::endl;
+      break;
+    }
+
+    std::cout << "Presione una tecla para continuar...";
+    std::cin.ignore();
+    std::cin.get();
+  }
+}
 
 void mostrarLista(sqlite3 * db) {
   const char * selectSQL = "SELECT * FROM MiTabla;";

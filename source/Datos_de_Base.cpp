@@ -19,7 +19,7 @@
       return rc;
     }
 
-int opcion;
+ int opcion;
   while (true) {
     system("cls");
     std::cout << "\t\t    (|   \\                        |        /|/  \\              " << std::endl;
@@ -29,8 +29,8 @@ int opcion;
     std::cout << "\t\t                                                                  " << std::endl;
     std::cout << "\t\t1. Listar Tablas\n";
     std::cout << "\t\t2. Crear Tabla\n";
-    std::cout << "\t\t3. Ver Lista\n";
-    std::cout << "\t\t4. Editar Lista\n";
+    std::cout << "\t\t3. Borrar Tabla\n";
+    std::cout << "\t\t4. Seleccionar Tabla\n";
     std::cout << "\t\t5. Salir\n";
     std::cout << "\t\tSeleccione una opcion: ";
     std::cin >> opcion;
@@ -38,19 +38,21 @@ int opcion;
     switch (opcion) {
     case 1:
       listarTablas(db);
+            std::cout << "Presione una tecla para continuar...";
+      std::cin.ignore();
+      std::cin.get();
       break;
     case 2:
       crearTabla(db);
       break;
     case 3:
-      mostrarLista(db);
-      // Pausa para esperar a que el usuario presione una tecla antes de borrar la pantalla
-      std::cout << "Presione una tecla para continuar...";
-      std::cin.ignore();
-      std::cin.get();
+      borrarTabla(db);
       break;
     case 4:
-      menuEditarLista(db);
+      seleccionarTabla(db);
+            std::cout << "Presione una tecla para continuar...";
+      std::cin.ignore();
+      std::cin.get();
       break;
     case 5:
       sqlite3_close(db);

@@ -1,7 +1,7 @@
 #ifndef DDB_H
 #define DDB_H 
 #include <iostream>
-#include "sqlite3.h"
+#include "..\sqlite3\sqlite3.h"
 #include <cstdlib>
 #include <string>
 

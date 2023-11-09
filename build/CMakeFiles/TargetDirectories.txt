@@ -1,0 +1,2 @@
+C:/Users/Jesus/Desktop/Datos de Base/build/CMakeFiles/edit_cache.dir
+C:/Users/Jesus/Desktop/Datos de Base/build/CMakeFiles/rebuild_cache.dir

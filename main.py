@@ -26,7 +26,7 @@ cursor = conect.cursor()
 ventana = tk.Tk()
 ventana.geometry("800x600")
 ventana.resizable(False, False)
-ventana.title("Ennove")
+ventana.title("Datos de Base v0.1")
 ventana.iconbitmap("assets/elpepe.ico")
 
 canvas = tk.Canvas(ventana, width=800, height=600, highlightthickness=0)

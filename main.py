@@ -24,6 +24,7 @@ ventana = tk.Tk()
 ventana.geometry("800x600")
 ventana.title("Datos de Base v0.5")
 ventana.iconbitmap("assets/elpepe.ico")
+ventana.resizable(False, False)
 canvas = tk.Canvas(ventana, width=800, height=600, highlightthickness=0)
 canvas.pack()
 

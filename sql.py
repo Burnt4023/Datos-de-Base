@@ -69,26 +69,31 @@ def mostrar_cartas():
     
 def añadir_carta():
     def guardar_carta():
-        # Obtener el nombre de la carta ingresado por el usuario
+    # Obtener el nombre de la carta ingresado por el usuario
         nombre_carta = entry_nombre.get()
         idioma_seleccionado = combo_idioma.get()
 
-        # Conectar a la base de datos y verificar si la carta ya está presente
-        connection = sql.connect("Cartas.db")
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM Cartas WHERE Nombre=?", (nombre_carta,))
-        existing_carta = cursor.fetchone()
-
-        if existing_carta:
-            # Si la carta ya está presente, aumentar la cantidad en 1
-            cantidad_actual = existing_carta[4]
-            nueva_cantidad = cantidad_actual + 1
-            cursor.execute("UPDATE Cartas SET Cantidad=? WHERE Nombre=?", (nueva_cantidad, nombre_carta))
+    # Buscar la carta en mtgsdk con el idioma seleccionado
+        if idioma_seleccionado == "English":
+            carta = mtgsdk.Card.where(name=nombre_carta).all()
         else:
-            # Si la carta no está presente, agregar una nueva entrada
             carta = mtgsdk.Card.where(name=nombre_carta, language=idioma_seleccionado).all()
-            if carta:
-                carta = carta[0]  # Tomar solo la primera carta si hay múltiples coincidencias
+
+        if carta:
+            carta = carta[0]  # Tomar solo la primera carta si hay múltiples coincidencias
+
+        # Conectar a la base de datos y verificar si la carta ya está presente
+            connection = sql.connect("Cartas.db")
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM Cartas WHERE Nombre=?", (carta.name,))
+            existing_carta = cursor.fetchone()
+
+            if existing_carta:
+            # Si la carta ya está presente, aumentar la cantidad en 1
+                nueva_cantidad = existing_carta[5] + 1  # Asumiendo que la cantidad está en la posición 5
+                cursor.execute("UPDATE Cartas SET Cantidad=? WHERE Nombre=?", (nueva_cantidad, carta.name))
+            else:
+            # Si la carta no está presente, agregar una nueva entrada
                 nombre = carta.name
                 tipo = carta.type
                 coste = carta.cmc
@@ -96,13 +101,15 @@ def añadir_carta():
                     poder_resistencia = f"{carta.power}/{carta.toughness}" if carta.power and carta.toughness else "N/A"
                 else:
                     poder_resistencia = "N/A"
-                
                 cantidad = 1  # Por defecto, se añade una carta
 
                 cursor.execute("INSERT INTO Cartas (Nombre, Tipo, Coste, Poder, Cantidad) VALUES (?, ?, ?, ?, ?)",
-                       (nombre, tipo, coste, poder_resistencia, cantidad))
-        connection.commit()
-        connection.close()
+                           (nombre, tipo, coste, poder_resistencia, cantidad))
+        
+            connection.commit()
+            connection.close()
+        else:
+            print("Carta no encontrada en el idioma seleccionado.")
 
     # Crear la ventana para añadir carta
     ventana_añadir_carta = tk.Tk()
@@ -115,7 +122,7 @@ def añadir_carta():
     entry_nombre = tk.Entry(ventana_añadir_carta)
 
     # Crear combobox para seleccionar el idioma
-    idiomas = ["Español", "Inglés"]  # Opcional: Puedes añadir más idiomas si lo deseas
+    idiomas = ["Spanish", "English"]  # Opcional: Puedes añadir más idiomas si lo deseas
     combo_idioma = ttk.Combobox(ventana_añadir_carta, values=idiomas, state="readonly")
     combo_idioma.current(0)  # Establecer el idioma por defecto
 

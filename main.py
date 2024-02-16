@@ -39,26 +39,19 @@ imagen_logo_tk = ImageTk.PhotoImage(imagen_logo)
 logo_canvas = canvas.create_image(400, 0, anchor="n", image=imagen_logo_tk)  # Ajusta la posición del logo
 
 #Botones
-imagen_boton1 = Image.open("assets/boton1.png")
 
 # Redimensionar las imágenes
-nuevo_tamano = (100, 50)  # Ajusta el tamaño según tus necesidades
-imagen_boton1 = imagen_boton1.resize(nuevo_tamano)
-imagen_boton1 = ImageTk.PhotoImage(imagen_boton1)
 
-imagen_boton2 = Image.open("assets/boton2.png")
-tamaño = (100, 50)
-imagen_boton2 = imagen_boton2.resize(tamaño)
-imagen_boton2 = ImageTk.PhotoImage(imagen_boton2)
 
-boton_mostrar = tk.Button(ventana, image=imagen_boton1, text="Mostrar Kebabs", command=mostrar_kebabs, compound="top")
-boton_añadir = tk.Button(ventana, image=imagen_boton1, text="Añadir Kebab", command=anadir_kebab, compound="top")
-boton_editar = tk.Button(ventana, image=imagen_boton1, text="Editar Kebab", command=editar_kebab, compound="top")
+boton_mostrar = tk.Button(ventana, text="Mostrar Cartas", command=mostrar_kebabs, compound="top")
+boton_añadir = tk.Button(ventana, text="Añadir Carta", command=añadir_carta, compound="top")
+boton_borrar = tk.Button(ventana, text="Borrar Carta", command=borrar_carta, compound="top")
+boton_buscar = tk.Button(ventana, text="Buscar Carta", command=buscar_carta, compound="top")
 # Posicionamiento de los botones (ajusta según tus necesidades)
 boton_mostrar.place(x=150, y=200)
 boton_añadir.place(x=350, y=200)
-boton_editar.place(x=550, y=200)
-
+boton_borrar.place(x=550, y=200)
+boton_buscar.place(x=350, y=300)
 cambiar_logo()
 
 ventana.mainloop()

@@ -107,6 +107,7 @@ def añadir_carta():
     # Crear la ventana para añadir carta
     ventana_añadir_carta = tk.Tk()
     ventana_añadir_carta.title("Añadir Carta")
+    ventana_añadir_carta.iconbitmap("assets/elpepe.ico")
     ventana_añadir_carta.geometry("400x250")
     
     # Crear etiqueta y campo de texto para ingresar el nombre de la carta
@@ -162,6 +163,7 @@ def borrar_carta():
 
     ventana_borrar = tk.Tk()
     ventana_borrar.geometry("400x250")
+    ventana_borrar.iconbitmap("assets/elpepe.ico")
     ventana_borrar.title("Borrar Carta")
 
     label_nombre = tk.Label(ventana_borrar, text="Nombre de la carta:")
@@ -210,6 +212,7 @@ def buscar_carta():
     
     ventana_buscar = tk.Tk()
     ventana_buscar.title("Buscar Carta")
+    ventana_buscar.iconbitmap("assets/elpepe.ico")
     ventana_buscar.geometry("500x310")
     
     tree = ttk.Treeview(ventana_buscar, columns=("Nombre", "Tipo", "Coste", "Poder", "Cantidad"), show="headings")

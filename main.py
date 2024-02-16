@@ -22,7 +22,7 @@ def cambiar_logo():
 inicializarsql()
 ventana = tk.Tk()
 ventana.geometry("800x600")
-ventana.title("Datos de Base v0.3")
+ventana.title("Datos de Base v0.4")
 ventana.iconbitmap("assets/elpepe.ico")
 canvas = tk.Canvas(ventana, width=800, height=600, highlightthickness=0)
 canvas.pack()

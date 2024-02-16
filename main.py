@@ -22,7 +22,6 @@ def cambiar_logo():
 inicializarsql()
 ventana = tk.Tk()
 ventana.geometry("800x600")
-ventana.resizable(False, False)
 ventana.title("Datos de Base v0.3")
 ventana.iconbitmap("assets/elpepe.ico")
 canvas = tk.Canvas(ventana, width=800, height=600, highlightthickness=0)
@@ -43,7 +42,7 @@ logo_canvas = canvas.create_image(400, 0, anchor="n", image=imagen_logo_tk)  # A
 # Redimensionar las imágenes
 
 
-boton_mostrar = tk.Button(ventana, text="Mostrar Cartas", command=mostrar_kebabs, compound="top")
+boton_mostrar = tk.Button(ventana, text="Mostrar Cartas", command=mostrar_cartas, compound="top")
 boton_añadir = tk.Button(ventana, text="Añadir Carta", command=añadir_carta, compound="top")
 boton_borrar = tk.Button(ventana, text="Borrar Carta", command=borrar_carta, compound="top")
 boton_buscar = tk.Button(ventana, text="Buscar Carta", command=buscar_carta, compound="top")

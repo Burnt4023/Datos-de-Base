@@ -1,8 +1,12 @@
-import sqlite3 as sql
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk
+import sqlite3 as sql
 import mtgsdk
+from PIL import ImageTk, Image
+import os
+
+posicion_ventana = None
+
 def inicializarsql():
     connection = sql.connect("Cartas.db")
     cursor = connection.cursor()
@@ -20,14 +24,16 @@ def inicializarsql():
     connection.close()
 
 
-def mostrar_kebabs():
+def mostrar_cartas():
+    def recargar_ventana(event):
+        ventana_mostrar.destroy()
+        mostrar_cartas()
     ventana_mostrar = tk.Tk()
     ventana_mostrar.geometry("800x400")
     ventana_mostrar.title("Datos de Base v0.3")
-    ventana_mostrar.resizable(False, True)
     ventana_mostrar.iconbitmap("assets/elpepe.ico")
 
-    # Crear un Treeview para mostrar los datos de los kebabs
+    # Crear un Treeview para mostrar los datos de las cartas
     tree = ttk.Treeview(ventana_mostrar, columns=("Nombre", "Tipo", "Coste", "Poder", "Cantidad"), show="headings")
 
     # Definir encabezados de columnas
@@ -57,14 +63,15 @@ def mostrar_kebabs():
 
     # Empaquetar el Treeview
     tree.pack(fill="both", expand=True)
-    # Cerrar la ventana después de mostrar los kebabs
+    ventana_mostrar.bind("<F5>", recargar_ventana)
+    # Cerrar la ventana después de mostrar las cartas
     ventana_mostrar.mainloop()
     
 def añadir_carta():
-    # Función para agregar una carta a la base de datos
     def guardar_carta():
-    # Obtener el nombre de la carta ingresado por el usuario
+        # Obtener el nombre de la carta ingresado por el usuario
         nombre_carta = entry_nombre.get()
+        idioma_seleccionado = combo_idioma.get()
 
         # Conectar a la base de datos y verificar si la carta ya está presente
         connection = sql.connect("Cartas.db")
@@ -73,13 +80,13 @@ def añadir_carta():
         existing_carta = cursor.fetchone()
 
         if existing_carta:
-        # Si la carta ya está presente, aumentar la cantidad en 1
+            # Si la carta ya está presente, aumentar la cantidad en 1
             cantidad_actual = existing_carta[4]
             nueva_cantidad = cantidad_actual + 1
             cursor.execute("UPDATE Cartas SET Cantidad=? WHERE Nombre=?", (nueva_cantidad, nombre_carta))
         else:
             # Si la carta no está presente, agregar una nueva entrada
-            carta = mtgsdk.Card.where(name=nombre_carta).all()
+            carta = mtgsdk.Card.where(name=nombre_carta, language=idioma_seleccionado).all()
             if carta:
                 carta = carta[0]  # Tomar solo la primera carta si hay múltiples coincidencias
                 nombre = carta.name
@@ -89,24 +96,27 @@ def añadir_carta():
                     poder_resistencia = f"{carta.power}/{carta.toughness}" if carta.power and carta.toughness else "N/A"
                 else:
                     poder_resistencia = "N/A"
-                    
+                
                 cantidad = 1  # Por defecto, se añade una carta
 
                 cursor.execute("INSERT INTO Cartas (Nombre, Tipo, Coste, Poder, Cantidad) VALUES (?, ?, ?, ?, ?)",
-                           (nombre, tipo, coste, poder_resistencia, cantidad))
+                       (nombre, tipo, coste, poder_resistencia, cantidad))
         connection.commit()
         connection.close()
-
 
     # Crear la ventana para añadir carta
     ventana_añadir_carta = tk.Tk()
     ventana_añadir_carta.title("Añadir Carta")
     ventana_añadir_carta.geometry("400x250")
-    ventana_añadir_carta.resizable(False, False)
     
     # Crear etiqueta y campo de texto para ingresar el nombre de la carta
     label_nombre = tk.Label(ventana_añadir_carta, text="Nombre de la carta:")
     entry_nombre = tk.Entry(ventana_añadir_carta)
+
+    # Crear combobox para seleccionar el idioma
+    idiomas = ["Español", "Inglés"]  # Opcional: Puedes añadir más idiomas si lo deseas
+    combo_idioma = ttk.Combobox(ventana_añadir_carta, values=idiomas, state="readonly")
+    combo_idioma.current(0)  # Establecer el idioma por defecto
 
     # Crear botón para buscar y guardar la carta
     boton_buscar = tk.Button(ventana_añadir_carta, text="Buscar y Guardar", command=guardar_carta)
@@ -114,7 +124,8 @@ def añadir_carta():
     # Posicionar elementos en la ventana
     label_nombre.pack()
     entry_nombre.pack()
-    boton_buscar.pack()
+    combo_idioma.pack(pady=10)
+    boton_buscar.pack(pady=10)
 
     # Ejecutar la ventana
     ventana_añadir_carta.mainloop()
@@ -151,7 +162,6 @@ def borrar_carta():
 
     ventana_borrar = tk.Tk()
     ventana_borrar.geometry("400x250")
-    ventana_borrar.resizable(False, False)
     ventana_borrar.title("Borrar Carta")
 
     label_nombre = tk.Label(ventana_borrar, text="Nombre de la carta:")
@@ -167,66 +177,63 @@ def borrar_carta():
     
 
 def buscar_carta():
-    # Función para buscar la carta y mostrar sus datos
-    
-    def mostrar_datos():
-    # Función para mostrar los datos de la carta
-    
-    # Conectar a la base de datos y obtener los datos de la carta
+    def mostrar_datos(entry_nombre, tree):
+        nombre_carta = entry_nombre.get()
+        
+        for item in tree.get_children():
+            tree.delete(item)
+        
         connection = sql.connect("Cartas.db")
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM Cartas WHERE Nombre=?", (entry_nombre.get(),))
-        datos_carta = cursor.fetchone()
+        cursor.execute("SELECT Cantidad FROM Cartas WHERE Nombre=?", (nombre_carta,))
+        cantidad_cartas = cursor.fetchone()
         connection.close()
-    
-    # Limpiar el contenido actual de la ventana
-        for widget in ventana_buscar.winfo_children():
-           widget.destroy()
-    
-    # Verificar si la carta se encontró en la base de datos
-        if datos_carta:
-            # Crear un Treeview para mostrar los datos de la carta
-            tree = ttk.Treeview(ventana_buscar, columns=("Nombre", "Tipo", "Coste", "Poder", "Cantidad"), show="headings")
-            # Definir encabezados de columnas
-            tree.heading("Nombre", text="Nombre")
-            tree.heading("Tipo", text="Tipo")
-            tree.heading("Coste", text="Coste")
-            tree.heading("Poder", text="Poder")
-            tree.heading("Cantidad", text="Cantidad")
-            tree.column("Nombre", width=40, anchor="center")
-            tree.column("Tipo", width=120, anchor = "center")
-            tree.column("Coste", width=80, anchor="center")
-            tree.column("Poder", width=60, anchor="center")
-            tree.column("Cantidad", width=80, anchor="center")
-
-            # Insertar los datos de la carta en el Treeview
-            tree.insert("", "end", values=datos_carta)
         
-            # Empaquetar el Treeview
-            tree.pack(fill="both", expand=True)
+        if cantidad_cartas:
+            cantidad = cantidad_cartas[0]
         else:
-            # Mostrar un mensaje indicando que la carta no fue encontrada
-            etiqueta_no_encontrada = tk.Label(ventana_buscar, text="Carta no encontrada")
-            etiqueta_no_encontrada.pack()
-            entry_nombre = tk.Entry(ventana_buscar)
-            entry_nombre.pack()
-            boton_mostrar_datos = tk.Button(ventana_buscar, text="Mostrar Datos", command=mostrar_datos)
-            boton_mostrar_datos.pack()
+            cantidad = 0
+        
+        carta = mtgsdk.Card.where(name=nombre_carta).all()
+        
+        if carta:
+            carta = carta[0]
+            if "Creature" not in carta.type:
+                carta.power = "N/A"
+            tree.insert("", "end", values=(carta.name, carta.type, carta.cmc, carta.power, cantidad))
+        else:
+            tree.insert("", "end", values=("Carta no encontrada", "", "", "", ""))
     
-    # Crear la ventana para buscar la carta
+    def recargar_ventana(event):
+        ventana_buscar.destroy()
+        buscar_carta()
+    
     ventana_buscar = tk.Tk()
     ventana_buscar.title("Buscar Carta")
-    ventana_buscar.geometry("700x300")
-    ventana_buscar.resizable(False, False)
-    # Campo de entrada para el nombre de la carta
+    ventana_buscar.geometry("500x310")
+    
+    tree = ttk.Treeview(ventana_buscar, columns=("Nombre", "Tipo", "Coste", "Poder", "Cantidad"), show="headings")
+    tree.heading("Nombre", text="Nombre")
+    tree.heading("Tipo", text="Tipo")
+    tree.heading("Coste", text="Coste")
+    tree.heading("Poder", text="Poder")
+    tree.heading("Cantidad", text="Cantidad")
+
+    # Ajustar el ancho de las columnas
+    tree.column("Nombre", width=160, anchor="center")
+    tree.column("Tipo", width=160, anchor = "center")
+    tree.column("Coste", width=50, anchor="center")
+    tree.column("Poder", width=50, anchor="center")
+    tree.column("Cantidad", width=80, anchor="center")
+    tree.pack()
+    
     label_nombre = tk.Label(ventana_buscar, text="Nombre de la carta:")
     label_nombre.pack()
     entry_nombre = tk.Entry(ventana_buscar)
     entry_nombre.pack()
     
-    # Botón para mostrar los datos de la carta
-    boton_mostrar_datos = tk.Button(ventana_buscar, text="Mostrar Datos", command=mostrar_datos)
+    boton_mostrar_datos = tk.Button(ventana_buscar, text="Mostrar Datos", command=lambda: mostrar_datos(entry_nombre, tree))
     boton_mostrar_datos.pack()
     
-    # Ejecutar el bucle principal de la ventana
+    ventana_buscar.bind("<F5>", recargar_ventana)
     ventana_buscar.mainloop()

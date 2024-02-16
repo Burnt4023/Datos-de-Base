@@ -90,7 +90,7 @@ def añadir_carta():
 
             if existing_carta:
             # Si la carta ya está presente, aumentar la cantidad en 1
-                nueva_cantidad = existing_carta[5] + 1  # Asumiendo que la cantidad está en la posición 5
+                nueva_cantidad = existing_carta[4] + 1  # Asumiendo que la cantidad está en la posición 5
                 cursor.execute("UPDATE Cartas SET Cantidad=? WHERE Nombre=?", (nueva_cantidad, carta.name))
             else:
             # Si la carta no está presente, agregar una nueva entrada

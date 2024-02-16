@@ -54,12 +54,12 @@ def mostrar_cartas():
     connection = sql.connect("Cartas.db")
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM Cartas")
-    kebabs = cursor.fetchall()
+    cartas = cursor.fetchall()
     connection.close()
 
     # Insertar los datos en el Treeview
-    for kebab in kebabs:
-        tree.insert("", "end", values=kebab)
+    for carta in cartas:
+        tree.insert("", "end", values=carta)
 
     # Empaquetar el Treeview
     tree.pack(fill="both", expand=True)
@@ -181,25 +181,29 @@ def borrar_carta():
 def buscar_carta():
     def mostrar_datos(entry_nombre, tree):
         nombre_carta = entry_nombre.get()
-        
+        idioma = combo_idioma.get()
         for item in tree.get_children():
             tree.delete(item)
-        
+        if idioma != "English":
+            carta = mtgsdk.Card.where(name=nombre_carta, language=idioma).all()[0]
+        else:
+            carta = mtgsdk.Card.where(name=nombre_carta).all()[0]
+
         connection = sql.connect("Cartas.db")
         cursor = connection.cursor()
-        cursor.execute("SELECT Cantidad FROM Cartas WHERE Nombre=?", (nombre_carta,))
+        cursor.execute("SELECT Cantidad FROM Cartas WHERE Nombre=?", (carta.name,))
         cantidad_cartas = cursor.fetchone()
         connection.close()
         
         if cantidad_cartas:
-            cantidad = cantidad_cartas[0]
+            cantidad = cantidad_cartas[0]  # Corrección aquí, la cantidad está en la primera posición
         else:
             cantidad = 0
         
-        carta = mtgsdk.Card.where(name=nombre_carta).all()
+        # Consideramos el idioma al buscar la carta
+
         
         if carta:
-            carta = carta[0]
             if "Creature" not in carta.type:
                 carta.power = "N/A"
             tree.insert("", "end", values=(carta.name, carta.type, carta.cmc, carta.power, cantidad))
@@ -210,10 +214,11 @@ def buscar_carta():
         ventana_buscar.destroy()
         buscar_carta()
     
+    
     ventana_buscar = tk.Tk()
     ventana_buscar.title("Buscar Carta")
     ventana_buscar.iconbitmap("assets/elpepe.ico")
-    ventana_buscar.geometry("500x310")
+    ventana_buscar.geometry("500x350")
     
     tree = ttk.Treeview(ventana_buscar, columns=("Nombre", "Tipo", "Coste", "Poder", "Cantidad"), show="headings")
     tree.heading("Nombre", text="Nombre")
@@ -232,6 +237,12 @@ def buscar_carta():
     
     label_nombre = tk.Label(ventana_buscar, text="Nombre de la carta:")
     label_nombre.pack()
+    
+    idiomas = ["Spanish", "English"]
+    combo_idioma = ttk.Combobox(ventana_buscar, values=idiomas, state="readonly")
+    combo_idioma.current(0)  # Establecer el idioma por defecto
+    combo_idioma.pack(pady=10)
+    
     entry_nombre = tk.Entry(ventana_buscar)
     entry_nombre.pack()
     
